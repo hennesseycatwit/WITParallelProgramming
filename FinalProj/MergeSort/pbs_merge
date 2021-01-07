@@ -1,0 +1,11 @@
+#!/bin/bash
+#PBS -l nodes=12:ppn=12
+#PBS -l walltime=0:10:00
+#PBS -q batch
+#PBS -N merge
+#PBS -j oe
+
+
+
+cd ~/FinalProj/MergeSort
+mpiexec -np 12 --map-by ppr:1:node --hostfile $PBS_NODEFILE ./merge.cx
