@@ -1,0 +1,13 @@
+#!/bin/bash
+#PBS -l nodes=1:ppn=12
+#PBS -l walltime=0:03:00
+#PBS -q batch
+#PBS -N PRIME
+#PBS -j oe
+
+#cat $PBS_NODEFILE
+
+
+cd ~/LA4
+
+mpiexec -np 1 --map-by ppr:1:node --hostfile $PBS_NODEFILE ./test.cx

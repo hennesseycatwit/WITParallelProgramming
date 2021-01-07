@@ -1,0 +1,18 @@
+These compile lines are meant to show what actions the makefile will perform
+
+EXAMPLE COMPILE LINES FOR C:
+
+g++ -I/usr/include/opencv  -c imageTools.cpp -lstdc++ -lopencv_core -lopencv_highgui -lopencv_imgproc
+gcc -c  imageTest.c
+g++ -I/usr/include/opencv  imageTools.o -lstdc++ -lopencv_core -lopencv_highgui -lopencv_imgproc imageTest.o -o test.x
+
+
+EXAMPLE COMPILES LINES FOR FORTRAN:
+
+g++ -I/usr/include/opencv  imageTools.cpp -lstdc++ -lopencv_core -lopencv_highgui -lopencv_imgproc -c
+gfortran -c imgBinding.f90 imageTest.f90
+gfortran -o testF.x imageTools.o -lstdc++ -lopencv_core -lopencv_highgui -lopencv_imgproc  imageTest.o imgBinding.o
+
+Notice that the C++ object file (imageTools.o) can be linked into a Fortran program. This will work as long as the same
+compiler suite is used to create all of the object files. This feature is called interoperability and many languages can
+interoperate with each other.

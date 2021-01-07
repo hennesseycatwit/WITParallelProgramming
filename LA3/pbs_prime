@@ -1,0 +1,13 @@
+#!/bin/bash
+#PBS -l nodes=4:ppn=12
+#PBS -l walltime=0:05:00
+#PBS -q batch
+#PBS -N PRIME
+#PBS -j oe
+
+#cat $PBS_NODEFILE
+export COUNTER1=PAPI_L1_DCM
+
+cd ~/LA3
+
+mpiexec -np 4 --map-by ppr:1:node --hostfile $PBS_NODEFILE ./LA3.x

@@ -1,0 +1,13 @@
+#!/bin/bash
+#PBS -l nodes=10:ppn=12
+#PBS -l walltime=0:05:00
+#PBS -q batch
+#PBS -N monte
+#PBS -j oe
+
+#cat $PBS_NODEFILE
+
+
+cd ~/LA5
+
+mpiexec -np 10 --map-by ppr:1:node --hostfile $PBS_NODEFILE ./Monte.x

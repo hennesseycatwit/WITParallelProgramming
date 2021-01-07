@@ -1,0 +1,206 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include "mpi.h"
+
+/*
+Function prototypes for the matrix vector product
+are located in the 'mvp.h' header file.
+You MUST implement these functions.
+*/
+
+
+/*
+ AssignMatrix2 takes in a double** for mat which means
+ to assign the individual elements of the array all that
+ needs to be done is mat[i][j] = someValue; 
+ */
+void assignMatrix2(double** mat, double* vec, int myStart, int myEnd, int n){
+  
+  for(int i=myStart; i<=myEnd; i++){
+    for(int j=0; j<n; j++){
+      if(i==j){ 
+        mat[i][j] = 2;
+      }
+      else if(i==j+1||j==i+1){
+        mat[i][j] = 1;
+      }
+      else{
+        mat[i][j] = 0;
+      }
+      vec[j]=1;
+    }
+  }
+}
+
+
+/*
+ AssignMatrix1 takes a double* for mat which makes it a
+ little more cumbersome to assign each individual element.
+ Since it is a single dimensional array of pointers to assign
+ the value I used *(mat+i*n+j) which dereferences the value in
+ the array, then using i*n moves to the right row and +J moves
+ to the right column.
+ */
+void assignMatrix1(double* mat, double* vec, int n){
+  for(int i=0; i<n; i++){
+    vec[i]=1;
+    for(int j=0; j<n; j++){
+      if(i==j){ 
+        *(mat + i*n + j) = 2;
+      }
+      else if(i==j+1||j==i+1){
+        *(mat + i*n + j) = 1;
+      }
+      else{
+        *(mat + i*n + j) = 0;       
+      }
+    }
+  }
+}
+
+/*
+ Both mvp1 and mvp2 calculate the product of each row of the matrix and assigns
+ them to the corresponding column of the solution vector. The only difference
+ being the way that the elements of mat are referenced.
+ */
+double* mvp1(double* mat, double* vec, int myStart, int myEnd, int numrows, int n){
+  double prod;
+  double* res = NULL;
+  res = (double*)malloc(numrows*sizeof(double));
+ 
+  for(int i=myStart; i<=myEnd; i++){
+    prod = 0;
+    for(int j=0; j<n; j++){
+      prod+=vec[i]*mat[i*n + j];
+    }
+    res[i] = prod;
+  }
+  return res; 
+}
+
+double* mvp2(double** mat, double* vec, int myStart, int myEnd, int numele, int n){
+  double prod;
+  double* res = NULL;
+  res = (double*)malloc(numele*sizeof(double));
+ 
+  for(int i=myStart; i<=myEnd; i++){
+    prod = 0;
+    for(int j=0; j<n; j++){
+      prod+=vec[j]*mat[i][j];
+    }
+    res[i] = prod;
+  }
+  return res;
+}
+
+/*
+ Using nested for loops to print the array allows to print the entire row of
+ the original matrix, then the vector, and then the resulting vector using an if
+ statement to place an = at roughly the midpoint of the outputs.
+ */
+void printMatVec2(double** mat, double* vec, double* res, int n){
+   for(int i=0; i<n; i++){
+     for(int j=0; j<n; j++){
+       printf("%.2f ", mat[i][j]);
+     }
+     printf("  %.2f", vec[i]);
+     if(i==(n/2)){
+       printf(" = %.2f\n", res[i]);
+     }
+     else{
+      printf("   %.2f\n", res[i]);
+     }
+   }
+}
+
+void printMatVec1(double* mat, double* vec, double* res, int myStart, int myEnd, int n){
+  for(int i=myStart; i<=myEnd; i++){
+    for(int j=0; j<n; j++){
+       printf("%.2f ", *(mat + i*n + j));
+     }
+     printf("  %.2f", vec[i]);
+     if(i==(n/2)){
+       printf(" = %.2f\n", res[i]);
+     }
+     else{
+      printf("   %.2f\n", res[i]);
+     }
+   }
+}
+
+/*
+ This frees each individual row of mat before freeing the array that held all
+ of the row references.
+ */
+void freeMatrix(void** mat, int n){
+  for(int i=0; i<n; i++){
+    free(mat[i]);
+   }
+   free(mat);
+}
+
+
+
+
+//Main function
+int main(int argc, char **argv){
+  int numranks, rank, n;
+  
+  MPI_Init(&argc, &argv);
+  MPI_Comm_size(MPI_COMM_WORLD, &numranks);
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  
+
+/*free(mat1);
+  free(vec);
+  printf("=============MVP2=============\n");
+  double** mat2 = NULL;
+
+  mat2 = (double**)malloc(numrows*sizeof(double*));
+  for(int i=0; i<numrows; i++){
+    mat2[i] = (double*)malloc(n*sizeof(double));
+  } 
+
+  double* vec = NULL;
+  vec = (double*)malloc(numrows*sizeof(double));
+  
+  assignMatrix2(mat2, vec, myStart, myEnd, n);
+  double* myRes = NULL;  
+  myRes = mvp2(mat2, vec, myStart, myEnd, numrows, n);
+  MPI_Gather(myRes, numrows*sizeof(double), MPI_DOUBLE, myRes, numrows*sizeof(double), MPI_DOUBLE, 0, MPI_COMM_WORLD);
+  printMatVec2(mat2, vec, myRes, n);
+  */
+  printf("=============MVP1=============\n");
+  double* mat1 = (double*)malloc(n*n*sizeof(double));
+  double* vec = (double*)malloc(n*sizeof(double));
+  if(rank==0){
+    n=12;
+    assignMatrix1(mat1, vec, n);
+  }
+
+  int numrows=n/numranks;
+
+  int myStart=rank*numrows;
+  int myEnd=myStart+numrows-1;
+  if(myEnd>n){
+    myEnd=n;
+   }
+  MPI_Bcast(&n, 1, MPI_INT, 0, MPI_COMM_WORLD);
+  MPI_Bcast(vec, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+  MPI_Bcast(mat1, n*n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+  printf("Rank: %d, myStart: %d, myEnd: %d\n", rank, myStart, myEnd);
+  for(int i=myStart; i<n; i++){
+      for(int j=0; j<n; j++){
+        printf("%f  ", mat1[i*n+j]);
+      }
+      printf("\n");
+  }
+  
+  
+
+  MPI_Finalize();
+  free(mat1);
+  free(vec);
+}
+
+ 

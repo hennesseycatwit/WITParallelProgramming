@@ -1,0 +1,20 @@
+Fortran
+Number of tasks=  2 My rank=  0 Running on junkrat
+Number of tasks=  2 My rank=  1 Running on torbjorn
+
+Testing MPI Message Passing...
+Message Pass Succeeded
+
+Testing Parallel Dot Product...
+Test Passed
+
+
+C
+Number of tasks= 2 My rank= 0 Running on junkrat
+Number of tasks= 2 My rank= 1 Running on torbjorn
+
+Testing MPI Message Passing...
+Message Pass Succeeded
+
+Testing Parallel Dot Product...
+Test Passed
